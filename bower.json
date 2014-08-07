@@ -1,0 +1,21 @@
+{
+  "name": "simple-js-mqtt-client",
+  "version": "0.0.1",
+  "authors": [
+    "Alessandro Gnoli <tebemis@gmail.com>"
+  ],
+  "description": "A simple MQTT client for javascript",
+  "license": "MIT",
+  "homepage": "https://github.com/ltg-uic/simple-js-mqtt-client",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "bootstrap": "~3.2.0",
+    "bower-mqttws": "*"
+  }
+}
