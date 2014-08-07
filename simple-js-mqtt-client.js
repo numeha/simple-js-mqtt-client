@@ -1,8 +1,7 @@
 // Simple MQTT client
 
 var MQTTClient = (function () {
-	var mqtt = {},
-		client = null;
+	var mqtt = {};
 
 	function privateMethod() {
 		// ...
@@ -11,6 +10,9 @@ var MQTTClient = (function () {
 	// mqtt.moduleProperty = 1;
 	mqtt.connect = function (host, clientId) {
 		client = new Messaging.Client(host, Number(1884), clientId);
+		client.connect({onSuccess:function(){
+			console.log("Connected to MQTT server")	
+		}});
 	};
 	
 	mqtt.onMessageArrived = function (message) {
