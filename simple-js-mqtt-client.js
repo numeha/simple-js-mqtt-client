@@ -19,7 +19,8 @@ var MQTT = (function () {
 			// TODO try to reconnect
 		}
 		client.onMessageArrived = function (message) {
-			console.log("Received " + message.payloadString + " on channel " + message.destinationName);
+			subscriptions[message.destinationName](message.payloadString)
+			console.debug("Received " + message.payloadString + " on channel " + message.destinationName);
 		}
 		// Connect
 		client.connect({onSuccess:function(){

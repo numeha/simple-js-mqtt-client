@@ -75,6 +75,27 @@
 					</div>
 			  </div>
 			</div>
+			
+			<div class="panel panel-default">
+			  <div class="panel-heading">
+			    <h3 class="panel-title">Messages</h3>
+			  </div>
+				<table class="table table-condensed table-bordered">
+					<colgroup>
+						<col class="col-xs-3">
+						<col class="col-xs-1">
+					  <col class="col-xs-7">
+					</colgroup>
+					<thead>
+						<tr>
+							<th>Time</th>
+							<th>Channel</th>
+							<th>Content</th>
+						</tr>
+					</thead>
+					<tbody id="messages"/>
+				</table>
+			</div>
 
 
 		</div><!-- /.container -->
@@ -134,13 +155,12 @@
 			}
 			var channel = $("#sub_channel").val()
 			MQTT.subscribe(channel, function(message) {
-				console.info("This is what we do when we get a message on " + channel);
+				$("#messages").prepend("<tr><td>" + new Date() + "</td><td>" + channel + "</td><td>" + message + "</td></tr>");
 			});
 			// Do UI stuff
 			$("#subscriptions").append("<span class='label label-default'>" + channel + "</span>")
 			return false;
-		});
-				
+		});	
 		</script>
 		
 	</body>
