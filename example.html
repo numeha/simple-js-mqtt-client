@@ -68,6 +68,7 @@
 							<input id="sub_channel" type="text" class="form-control" placeholder="Channel">
 						</div>
 						<button id="sub_btn" type="submit" class="btn btn-default">Subscribe</button>
+						<button id="unsub_btn" type="submit" class="btn btn-default">Unsubscribe</button>
 					</form>
 					<div>
 						<h3 id="subscriptions">
@@ -131,6 +132,7 @@
 				$("#connectbtn").text("Connect")
 				$("#host").prop('disabled', false);
 				$("#clientId").prop('disabled', false);
+				$('.label').remove();
 			}
 			return false;
 		});
@@ -138,11 +140,11 @@
 		// Publish
 		$("#pub_btn").click(function() {
 			if (!MQTT.isConnected()) {
-				console.error("MQTT client is not connected to a broker. Impossible to publish message")
+				console.error("MQTT client is not connected to a broker. Impossible to publish message");
 				return false;
 			}
-			var channel = $("#pub_channel").val()
-			var message = $("#pub_message").val()
+			var channel = $("#pub_channel").val();
+			var message = $("#pub_message").val();
 			MQTT.publish(channel, message)
 			return false;
 		});
@@ -150,17 +152,31 @@
 		// Subscribe
 		$("#sub_btn").click(function() {
 			if (!MQTT.isConnected()) {
-				console.error("MQTT client is not connected to a broker. Impossible to subscribe to channel")
+				console.error("MQTT client is not connected to a broker. Impossible to subscribe to channel");
 				return false;
 			}
-			var channel = $("#sub_channel").val()
+			var channel = $("#sub_channel").val();
 			MQTT.subscribe(channel, function(message) {
 				$("#messages").prepend("<tr><td>" + new Date() + "</td><td>" + channel + "</td><td>" + message + "</td></tr>");
 			});
 			// Do UI stuff
-			$("#subscriptions").append("<span class='label label-default'>" + channel + "</span>")
+			$("#subscriptions").append("<span channel='" + channel + "' class='label label-default'>" + channel + "</span> ");
 			return false;
 		});	
+		
+		// Unsubscribe
+		$("#unsub_btn").click(function() {
+			if (!MQTT.isConnected()) {
+				console.error("MQTT client is not connected to a broker. Impossible to unsubscribe from channel");
+				return false;
+			}
+			var channel = $("#sub_channel").val();
+			MQTT.unsubscribe(channel);
+			// Do UI stuff
+			$('.label[channel="' + channel + '"]').remove();
+			return false;
+		});
+		
 		</script>
 		
 	</body>

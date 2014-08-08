@@ -9,7 +9,6 @@ var MQTT = (function () {
 		// ...
 	}
 
-	// mqtt.moduleProperty = 1;
 	mqtt.connect = function (host, clientId) {
 		// Create client
 		client = new Messaging.Client(host, Number(1884), clientId);
@@ -32,6 +31,7 @@ var MQTT = (function () {
 	mqtt.disconnect = function() {
 		client.disconnect()
 		isConnected = false;
+		subscriptions = {};
 		console.debug("Disconnected from MQTT server")
 	}
 	
