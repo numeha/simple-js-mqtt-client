@@ -42,6 +42,39 @@
 		</div>
 
 		<div class="container">
+			
+			<div class="panel panel-default">
+			  <div class="panel-heading">
+			    <h3 class="panel-title">Publish</h3>
+			  </div>
+			  <div class="panel-body">
+					<form class="form-inline" role="form">
+						<div class="form-group">
+							<input id="pub_channel" type="text" class="form-control" placeholder="Channel">
+							<input id="pub_message" type="text" class="form-control" placeholder="Message">
+						</div>
+						<button id="pub_btn" type="submit" class="btn btn-default">Publish</button>
+					</form>
+			  </div>
+			</div>
+			
+			<div class="panel panel-default">
+			  <div class="panel-heading">
+			    <h3 class="panel-title">Subscribe</h3>
+			  </div>
+			  <div class="panel-body">
+					<form class="form-inline" role="form">
+						<div class="form-group">
+							<input id="sub_channel" type="text" class="form-control" placeholder="Channel">
+						</div>
+						<button id="sub_btn" type="submit" class="btn btn-default">Subscribe</button>
+					</form>
+					<div>
+						<h3 id="subscriptions">
+						</h3>
+					</div>
+			  </div>
+			</div>
 
 
 		</div><!-- /.container -->
@@ -63,7 +96,7 @@
 			var clientId = $("#clientId").val()
 			if (!connected) {
 				// Connect
-				MQTTClient.connect(host, clientId);
+				MQTT.connect(host, clientId);
 				// Do UI stuff
 				connected = true;
 				$("#connectbtn").text("Disconnect")
@@ -71,7 +104,7 @@
 				$("#clientId").prop('disabled', true);
 			} else {
 				// Disconnect
-				MQTTClient.disconnect()
+				MQTT.disconnect()
 				// Do UI stuff 
 				connected = false;
 				$("#connectbtn").text("Connect")
@@ -79,7 +112,35 @@
 				$("#clientId").prop('disabled', false);
 			}
 			return false;
-		});		
+		});
+		
+		// Publish
+		$("#pub_btn").click(function() {
+			if (!MQTT.isConnected()) {
+				console.error("MQTT client is not connected to a broker. Impossible to publish message")
+				return false;
+			}
+			var channel = $("#pub_channel").val()
+			var message = $("#pub_message").val()
+			MQTT.publish(channel, message)
+			return false;
+		});
+		
+		// Subscribe
+		$("#sub_btn").click(function() {
+			if (!MQTT.isConnected()) {
+				console.error("MQTT client is not connected to a broker. Impossible to subscribe to channel")
+				return false;
+			}
+			var channel = $("#sub_channel").val()
+			MQTT.subscribe(channel, function(message) {
+				console.info("This is what we do when we get a message on " + channel);
+			});
+			// Do UI stuff
+			$("#subscriptions").append("<span class='label label-default'>" + channel + "</span>")
+			return false;
+		});
+				
 		</script>
 		
 	</body>
