@@ -54,7 +54,9 @@
 		
 		<!-- Capture events and use the library -->
 		<script>
+		// UI globals
 		var connected = false;
+		
 		// Connect/ disconnect
 		$("#connectbtn").click(function() {
 			var host = $("#host").val()
@@ -62,16 +64,21 @@
 			if (!connected) {
 				// Connect
 				MQTTClient.connect(host, clientId);
+				// Do UI stuff
 				connected = true;
-				//TODO change button text
+				$("#connectbtn").text("Disconnect")
+				$("#host").prop('disabled', true);
+				$("#clientId").prop('disabled', true);
 			} else {
 				// Disconnect
-				// TODO implement this!
-				MQTTClient.disconnect() 
+				MQTTClient.disconnect()
+				// Do UI stuff 
 				connected = false;
-				//TODO change button text
+				$("#connectbtn").text("Connect")
+				$("#host").prop('disabled', false);
+				$("#clientId").prop('disabled', false);
 			}
-			
+			return false;
 		});		
 		</script>
 		

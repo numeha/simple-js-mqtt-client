@@ -10,10 +10,16 @@ var MQTTClient = (function () {
 	// mqtt.moduleProperty = 1;
 	mqtt.connect = function (host, clientId) {
 		client = new Messaging.Client(host, Number(1884), clientId);
+		// client.onConnectionLost =	// gotta implement this
 		client.connect({onSuccess:function(){
-			console.log("Connected to MQTT server")	
+			console.debug("Connected to MQTT server")	
 		}});
 	};
+	
+	mqtt.disconnect = function() {
+		client.disconnect()
+		console.debug("Disconnected from MQTT server")
+	}
 	
 	mqtt.onMessageArrived = function (message) {
 		console.log("onMessageArrived: "+message.payloadString);
