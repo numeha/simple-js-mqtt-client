@@ -5,17 +5,37 @@
 (function () {
 	"use strict";
 	
+	// Establish the root object, `window` in the browser, or `exports` on the server.
 	var root = this
+	
+	// Save the previous value of the `MQTT` variable to use with noConflict().
 	var previous_mqtt = root.MQTT
 
+	// Load dependencies (mqtt libraries)
+	// adamvr/MQTT.js for node (https://github.com/adamvr/MQTT.js)
+	// Paho.js, via mqtt-ws, for the browser (https://github.com/M2MConnections/mqtt-ws)
 	var has_require = typeof require !== 'undefined'
+	if( has_require ) {
+		// node
+		var adamvr_mqtt = root.adamvr_mqtt
+		if( typeof adamvr_mqtt === 'undefined' ) {
+			adamvr_mqtt = require('mqtt')
+		}
+	} else {
+		// browser
+		var mqttws = root.Messaging
+		if( typeof mqttws === 'undefined' ) {
+			throw new Error('MQTT requires mqtt-ws (https://github.com/M2MConnections/mqtt-ws) a wrapper of Paho.js');
+		}
+	}	
 	
 	// Internal reference to mqtt and other variable initialization
 	var mqtt = {},
+		br_client = {},
 		isConnected = false,
 		subscriptions = {};
 		
-	// Export mqtt object for node.js, with
+	// Exports mqtt object for node.js, with
 	// backwards-compatibility for the old `require()` API. If we're in
 	// the browser, add `MQTT` as a global object.
 	if (typeof exports !== 'undefined') {
@@ -27,21 +47,20 @@
 		root.MQTT = mqtt;
 	}
  
-	// Current version.
+	/* 
+	 * Exposes the current version of the library.
+	 */
 	mqtt.VERSION = '0.1.0';
 	
-	// Run simple-js-mqtt-client in noConflict mode, returning the 
-	// MQTT variable to its previous owner. 
-	// Returns a reference to the MQTT object.
+	/** 
+	 * Runs simple-js-mqtt-client in noConflict mode by  
+	 * returning the MQTT variable to its previous owner. 
+	 * @return  a reference to the MQTT object defined by this library.
+	 */
 	mqtt.noConflict = function() {
 		root.MQTT = previous_mqtt;
 	  return mqtt;
 	}
-	
-	// Test function	
-	mqtt.test = function () {
-		return "test"
-	};	
 	
 	/**
 	 * Connects to a MQTT broker and optionally executes a callback.
@@ -52,23 +71,24 @@
 	 */
 	mqtt.connect = function (host, clientId, callback) {
 		// Create client
-		client = new Messaging.Client(host, Number(1884), clientId);
+		br_client = new Messaging.Client(host, Number(1884), clientId);
 		// Register callbacks
-		client.onConnectionLost = function(){
+		br_client.onConnectionLost = function(){
 			isConnected = false;
 			// TODO try to reconnect
 		}
-		client.onMessageArrived = function (message) {
+		br_client.onMessageArrived = function (message) {
 			subscriptions[message.destinationName](message.payloadString)
 			console.debug("Message `" + message.payloadString + "` on channel `" + message.destinationName +"`");
 		}
 		// Connect
-		client.connect({onSuccess:function(){
+		br_client.connect({onSuccess:function(){
 			isConnected = true;
 			console.debug("Connected to MQTT server")	
 			// If there is a callback defined, execute it
-			if (callback!==undefined)
-				callback()
+			if (callback!==undefined) {
+				callback();
+			}
 		}});
 	};
 	
@@ -76,7 +96,7 @@
 	 * Disconnects from the MQTT client.
 	 */
 	mqtt.disconnect = function() {
-		client.disconnect()
+		br_client.disconnect()
 		isConnected = false;
 		subscriptions = {};
 		console.debug("Disconnected from MQTT server")
@@ -102,7 +122,7 @@
 			subscriptions[channel] = callback;
 			console.debug("Subscribed to channel " + channel);
 		}
-		client.subscribe(channel, options);
+		br_client.subscribe(channel, options);
 	};
 	
 	/**
@@ -115,7 +135,7 @@
 			delete subscriptions[channel];
 			console.debug("Unsubscribed from channel " + channel);
 		}
-		client.unsubscribe(channel, options);
+		br_client.unsubscribe(channel, options);
 	};
 	
 	/**
@@ -134,8 +154,16 @@
 	mqtt.publish = function (channel, message) {
 	  message = new Messaging.Message(message);
 	  message.destinationName = channel;
-	  client.send(message);
+	  br_client.send(message);
 	};
 	
-	return mqtt;
+	
+	// AMD registration happens at the end for compatibility with AMD loaders
+	// that may not enforce next-turn semantics on modules.
+	if (typeof define === 'function' && define.amd) {
+		define('MQTT', [], function() {
+			return mqtt;
+		});
+	}
+	
 }.call(this));

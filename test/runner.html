@@ -13,6 +13,8 @@
     mocha.setup('bdd');
     mocha.setup({ignoreLeaks: true});
   </script>
+	<!-- Need to add dependency on Paho-->
+	<script src="../bower_components/bower-mqttws/mqttws31.js" type="text/javascript" charset="utf-8"></script>
   <script src="../simple-js-mqtt-client.js"></script>
   <script src="simple-js-mqtt-client.test.js"></script>
   <script>
