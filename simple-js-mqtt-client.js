@@ -52,7 +52,7 @@
 	/* 
 	 * Exposes the current version of the library.
 	 */
-	mqtt.VERSION = '0.2.0';
+	mqtt.VERSION = '0.2.1';
 	
 	
 	/** 
