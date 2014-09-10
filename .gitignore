@@ -1,2 +1,6 @@
 bower_components/
+node_modules/
 out/
+.DS_Store
+
+npm-debug.log

@@ -2,10 +2,46 @@
  * Simple MQTT client *
  **********************/
 
-var MQTT = (function () {
+(function () {
+	"use strict";
+	
+	var root = this
+	var previous_mqtt = root.MQTT
+
+	var has_require = typeof require !== 'undefined'
+	
+	// Internal reference to mqtt and other variable initialization
 	var mqtt = {},
 		isConnected = false,
 		subscriptions = {};
+		
+	// Export mqtt object for node.js, with
+	// backwards-compatibility for the old `require()` API. If we're in
+	// the browser, add `MQTT` as a global object.
+	if (typeof exports !== 'undefined') {
+		if (typeof module !== 'undefined' && module.exports) {
+			exports = module.exports = mqtt;
+		}
+		exports.MQTT = mqtt;
+	} else {
+		root.MQTT = mqtt;
+	}
+ 
+	// Current version.
+	mqtt.VERSION = '0.1.0';
+	
+	// Run simple-js-mqtt-client in noConflict mode, returning the 
+	// MQTT variable to its previous owner. 
+	// Returns a reference to the MQTT object.
+	mqtt.noConflict = function() {
+		root.MQTT = previous_mqtt;
+	  return mqtt;
+	}
+	
+	// Test function	
+	mqtt.test = function () {
+		return "test"
+	};	
 	
 	/**
 	 * Connects to a MQTT broker and optionally executes a callback.
@@ -102,4 +138,4 @@ var MQTT = (function () {
 	};
 	
 	return mqtt;
-}());
+}.call(this));
