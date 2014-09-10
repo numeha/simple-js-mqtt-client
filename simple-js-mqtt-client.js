@@ -29,9 +29,10 @@
 		}
 	}	
 	
-	// Internal reference to mqtt and other variable initialization
+	// Internal reference to mqtt (used below) and other variable initialization
 	var mqtt = {},
-		br_client = {},
+		br_client = {}, // Browser client
+		n_client = {},	// Node client
 		isConnected = false,
 		subscriptions = {};
 		
@@ -47,10 +48,12 @@
 		root.MQTT = mqtt;
 	}
  
+ 
 	/* 
 	 * Exposes the current version of the library.
 	 */
 	mqtt.VERSION = '0.1.0';
+	
 	
 	/** 
 	 * Runs simple-js-mqtt-client in noConflict mode by  
@@ -62,6 +65,7 @@
 	  return mqtt;
 	}
 	
+	
 	/**
 	 * Connects to a MQTT broker and optionally executes a callback.
 	 *
@@ -70,6 +74,34 @@
 	 * @param {callback} [callback] - A function that is executed after a successful connection.
 	 */
 	mqtt.connect = function (host, clientId, callback) {
+		if( has_require ) {
+			connectNode(host, clientId, callback);
+		} else {
+			connectBrowser(host, clientId, callback);
+		}
+	};
+	
+	// Helper function that connects MQTT client in node
+	var connectNode = function(host, clientId, callback) {
+		// Create client
+		var host = '131.193.79.121' //TODO change this
+		n_client = adamvr_mqtt.createClient(1883, host, {clientId : clientId});
+		// Register incoming message callback
+		n_client.on('message', function(channel, message) {
+			// Executes the appropriate channel callback
+			subscriptions[channel](message)
+			console.log("Message `" + message + "` on channel `" + channel +"`");
+		});
+		// Set isConnected flag and output message
+		isConnected = true;
+		// If the user defined a callback, execute it
+		if (callback!==undefined) {
+			callback();
+		}
+	};
+	
+	// Helper function that connects MQTT client in the browser
+	var connectBrowser = function(host, clientId, callback) {
 		// Create client
 		br_client = new Messaging.Client(host, Number(1884), clientId);
 		// Register callbacks
@@ -92,15 +124,33 @@
 		}});
 	};
 	
+	
 	/**
 	 * Disconnects from the MQTT client.
 	 */
 	mqtt.disconnect = function() {
+		if( has_require ) {
+			disconnectNode();
+		} else {
+			disconnectBrowser();
+		}
+	}
+	
+	// Helper function that disconnects MQTT client in node
+	var disconnectNode = function(){
+		n_client.end();
+		isConnected = false;
+		subscriptions = {};
+	};
+	
+	// Helper function that diconnects MQTT client in the browser
+	var disconnectBrowser = function(){
 		br_client.disconnect()
 		isConnected = false;
 		subscriptions = {};
-		console.debug("Disconnected from MQTT server")
-	}
+		console.debug("Disconnected from MQTT server");
+	};
+	
 	
 	/**
 	 * Checks if we are still connected to the MQTT broker.
@@ -110,12 +160,33 @@
 		return isConnected
 	}
 	
+	
 	/**
 	 * Subscribes to a channel and registers a callback.
 	 * @param {string} channel  - the channel we are subscribing to.
 	 * @param {callback} - A function that is executed every time a message is received on that channel.
 	 */
 	mqtt.subscribe = function (channel, callback) {
+		if( has_require ) {
+			subscribeNode(channel, callback);
+		} else {
+			subscribeBrowser(channel, callback);
+		}
+	};
+	
+	// Helper function that subscribes to a channel in node
+	var subscribeNode = function(channel, callback){
+		var onSuccess = function(err, granted) {
+			subscriptions[channel] = callback;
+			console.log("Subscribed to channel " + channel);
+		}
+		n_client.subscribe(channel, {qos : 0}, onSuccess);
+		subscriptions[channel] = callback;
+		console.log("Subscribed to channel " + channel);
+	};
+	
+	// Helper function that subscribes to a channel in the browser
+	var subscribeBrowser = function(channel, callback){
 		var options = {};
 		options.qos = 0;
 		options.onSuccess = function() {
@@ -125,11 +196,30 @@
 		br_client.subscribe(channel, options);
 	};
 	
+	
 	/**
 	 * Unsubscribe from a channel.
 	 * @param {string} channel  - the channel we are unsibscribing from.
 	 */
 	mqtt.unsubscribe = function (channel) {
+		if( has_require ) {
+			unsubscribeNode(channel, callback);
+		} else {
+			unsubscribeBrowser(channel, callback);
+		}
+	};
+	
+	// Helper function that unsubscribes from a channel in node
+	var unsubscribeNode = function(channel) {
+		var onSuccess = function() {
+			delete subscriptions[channel];
+			console.log("Unsubscribed from channel " + channel);
+		}
+		n_client.unsubscribe(channel, onSuccess);
+	};
+	
+	// Helper function that subscribes from a channel in the browser
+	var unsubscribeBrowser = function(channel) {
 		var options = {};
 		options.onSuccess = function() {
 			delete subscriptions[channel];
@@ -138,13 +228,20 @@
 		br_client.unsubscribe(channel, options);
 	};
 	
+	
 	/**
 	 * Lists all the channels we are currently subscribed to.
 	 * @returns {Array} a lists of all the channels we are currently subscribed to.
 	 */
 	mqtt.getSubscriptions = function() {
-		return Object.keys(subscriptions);
+		if( has_require ) {
+			console.log(subscriptions)
+			// return keys(subscriptions)
+		} else {
+			return Object.keys(subscriptions);
+		}
 	};
+	
 	
 	/**
 	 * Publishes a message to a channel.
@@ -152,6 +249,20 @@
 	 * @param {string} message - the message we are publishing.
 	 */
 	mqtt.publish = function (channel, message) {
+		if( has_require ) {
+			publishNode(channel, message)
+		} else {
+			publishBrowser(channel, message)
+		}
+	};
+	
+	// Helper function that publishes to a channel in node
+	var publishNode = function (channel, message) {
+		n_client.publish(channel, message)
+	};
+	
+	// Helper function that publishes to a channel in the browser
+	var publishBrowser = function (channel, message) {
 	  message = new Messaging.Message(message);
 	  message.destinationName = channel;
 	  br_client.send(message);
