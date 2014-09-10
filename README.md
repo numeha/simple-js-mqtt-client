@@ -32,5 +32,5 @@ After you import MQTT will expose the same asynchronous interface to both the br
 See the [hello.html](https://github.com/tebemis/simple-js-mqtt-client/blob/master/examples/browser/hello.html) example. If you want something a little more advanced check out [example.html](https://github.com/tebemis/simple-js-mqtt-client/blob/master/examples/browser/example.html)
 
 ## Examples (node)
-Take a look at [publish.js]() and [subscribe.js]().
+Take a look at [publish.js](https://github.com/tebemis/simple-js-mqtt-client/blob/master/examples/node/publish.js) and [subscribe.js](https://github.com/tebemis/simple-js-mqtt-client/blob/master/examples/node/subscribe.js).
 
