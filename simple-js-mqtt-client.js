@@ -84,20 +84,21 @@
 	// Helper function that connects MQTT client in node
 	var connectNode = function(host, clientId, callback) {
 		// Create client
-		var host = '131.193.79.121' //TODO change this
 		n_client = adamvr_mqtt.createClient(1883, host, {clientId : clientId});
 		// Register incoming message callback
 		n_client.on('message', function(channel, message) {
 			// Executes the appropriate channel callback
-			subscriptions[channel](message)
-			console.log("Message `" + message + "` on channel `" + channel +"`");
+			subscriptions[channel](message);
 		});
-		// Set isConnected flag and output message
-		isConnected = true;
-		// If the user defined a callback, execute it
-		if (callback!==undefined) {
-			callback();
-		}
+		// Register successfull connection callback
+		n_client.on('connect', function(){
+			// Set isConnected flag and output message
+			isConnected = true;
+			// If the user defined a callback, execute it
+			if (callback!==undefined) {
+				callback();
+			}
+		});
 	};
 	
 	// Helper function that connects MQTT client in the browser
@@ -178,11 +179,8 @@
 	var subscribeNode = function(channel, callback){
 		var onSuccess = function(err, granted) {
 			subscriptions[channel] = callback;
-			console.log("Subscribed to channel " + channel);
 		}
 		n_client.subscribe(channel, {qos : 0}, onSuccess);
-		subscriptions[channel] = callback;
-		console.log("Subscribed to channel " + channel);
 	};
 	
 	// Helper function that subscribes to a channel in the browser
@@ -203,9 +201,9 @@
 	 */
 	mqtt.unsubscribe = function (channel) {
 		if( has_require ) {
-			unsubscribeNode(channel, callback);
+			unsubscribeNode(channel);
 		} else {
-			unsubscribeBrowser(channel, callback);
+			unsubscribeBrowser(channel);
 		}
 	};
 	
@@ -213,7 +211,6 @@
 	var unsubscribeNode = function(channel) {
 		var onSuccess = function() {
 			delete subscriptions[channel];
-			console.log("Unsubscribed from channel " + channel);
 		}
 		n_client.unsubscribe(channel, onSuccess);
 	};
@@ -234,12 +231,7 @@
 	 * @returns {Array} a lists of all the channels we are currently subscribed to.
 	 */
 	mqtt.getSubscriptions = function() {
-		if( has_require ) {
-			console.log(subscriptions)
-			// return keys(subscriptions)
-		} else {
-			return Object.keys(subscriptions);
-		}
+		return Object.keys(subscriptions)
 	};
 	
 	
