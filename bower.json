@@ -1,6 +1,6 @@
 {
   "name": "simple-js-mqtt-client",
-  "version": "0.1.0",
+  "version": "0.2.0",
 	"main": "simple-js-mqtt-client.js",
   "authors": [
     "Alessandro Gnoli <tebemis@gmail.com>"
