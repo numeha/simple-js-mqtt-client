@@ -30,10 +30,10 @@ var MQTT = require('simple-js-mqtt-client')
 You can now use all the asynchronous interfaces exposed to both the browser and node by the `MQTT` object. For instance, the following chunk of code connects to a MQTT broker on our machine and subscribes to a channel registering a callback which will print the message once it is received.
 ```javascript
 MQTT.connect("localhost", "hello-MQTT", function() {
-			MQTT.subscribe('channel-1', function(message) {
-				console.info("Received: " + message)
-			});
-		});
+	MQTT.subscribe('channel-1', function(message) {
+		console.info("Received: " + message)
+	});
+});
 ```
 
 ## Examples (browser)
