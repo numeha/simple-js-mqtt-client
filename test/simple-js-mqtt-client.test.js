@@ -13,7 +13,7 @@ describe('MQTT', function(){
     
 		it('should connect and verify connection', function(){
 			// Connect and register callback for when connection happens
-			MQTT.connect("ltg.evl.uic.edu", "hello-MQTT", function() {
+			MQTT.connect("ltg.evl.uic.edu", function() {
 				// Check if the client is connected (it shuold be since we are inside the callback that 
 				// is fired whenever the connection is established)
 				assert.equal(true, MQTT.isConnected())
@@ -25,7 +25,7 @@ describe('MQTT', function(){
 		
 		it('should connect, subscribe and receive a message', function(){
 			// Connect and register callback for when connection happens
-			MQTT.connect("ltg.evl.uic.edu", "hello-MQTT", function() {
+			MQTT.connect("ltg.evl.uic.edu", function() {
 				// Suscribe to a channel and register a callback to handle received messages
 				MQTT.subscribe('demo1', function(message) {
 					assert.equal('test-message-1', message);
@@ -43,7 +43,7 @@ describe('MQTT', function(){
 
 		it('should list current subscriptions correctly', function(){
 			// Connect and register callback for when connection happens
-			MQTT.connect("ltg.evl.uic.edu", "hello-MQTT", function() {
+			MQTT.connect("ltg.evl.uic.edu", function() {
 				// Subscribe to a bunch of channels
 		    MQTT.subscribe('channel_1', function(message) {})
 		    MQTT.subscribe('channel_2', function(message) {})

@@ -52,7 +52,7 @@
 	/* 
 	 * Exposes the current version of the library.
 	 */
-	mqtt.VERSION = '0.2.2';
+	mqtt.VERSION = '0.3.0';
 	
 	
 	/** 
@@ -70,10 +70,18 @@
 	 * Connects to a MQTT broker and optionally executes a callback.
 	 *
 	 * @param {string} host - the hostname of the broker.
-	 * @param {string} clientId  - the unique name of this client.
+	 * @param {string} [clientId]  - the unique name of this client. If no ID is provided a random one is generated
 	 * @param {callback} [callback] - A function that is executed after a successful connection.
 	 */
 	mqtt.connect = function (host, clientId, callback) {
+		// Handle optional clientId parameter
+	  if (arguments.length == 2) { // if only two arguments were supplied
+	    if (Object.prototype.toString.call(clientId) == "[object Function]") {
+	      callback = clientId;
+				clientId = generateRandomClientId();
+	    }
+	  }
+		// Connect
 		if( has_require ) {
 			connectNode(host, clientId, callback);
 		} else {
@@ -124,6 +132,17 @@
 				callback();
 			}
 		}});
+	};
+	
+	// Helper function that generates a random client ID
+	var generateRandomClientId = function() {
+		var length = 22;
+		var chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    var result = '';
+    for (var i = length; i > 0; --i) {
+			result += chars[Math.round(Math.random() * (chars.length - 1))];
+		}
+    return result;
 	};
 	
 	
