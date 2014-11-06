@@ -1,6 +1,6 @@
 {
   "name": "simple-js-mqtt-client",
-  "version": "0.2.1",
+  "version": "0.2.2",
 	"main": "simple-js-mqtt-client.js",
   "authors": [
     "Alessandro Gnoli <tebemis@gmail.com>"
@@ -16,6 +16,6 @@
     "tests"
   ],
   "dependencies": {
-    "bower-mqttws": "*"
+    "bower-mqttws": "=1.0.0"
   }
 }

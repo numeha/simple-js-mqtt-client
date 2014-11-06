@@ -23,7 +23,7 @@
 		}
 	} else {
 		// browser
-		var mqttws = root.Messaging
+		var mqttws = root.Paho.MQTT
 		if( typeof mqttws === 'undefined' ) {
 			throw new Error('MQTT requires mqtt-ws (https://github.com/M2MConnections/mqtt-ws) a wrapper of Paho.js');
 		}
@@ -52,7 +52,7 @@
 	/* 
 	 * Exposes the current version of the library.
 	 */
-	mqtt.VERSION = '0.2.1';
+	mqtt.VERSION = '0.2.2';
 	
 	
 	/** 
@@ -104,10 +104,11 @@
 	// Helper function that connects MQTT client in the browser
 	var connectBrowser = function(host, clientId, callback) {
 		// Create client
-		br_client = new Messaging.Client(host, Number(1884), clientId);
+		br_client = new Paho.MQTT.Client(host, Number(1884), clientId);
 		// Register callbacks
 		br_client.onConnectionLost = function(){
 			isConnected = false;
+			console.warn("Connection to broker lost. It might be because another client with the same ID is already connected to the same broker")
 			// TODO try to reconnect
 		}
 		br_client.onMessageArrived = function (message) {
@@ -255,7 +256,7 @@
 	
 	// Helper function that publishes to a channel in the browser
 	var publishBrowser = function (channel, message) {
-	  message = new Messaging.Message(message);
+	  message = new Paho.MQTT.Message(message);
 	  message.destinationName = channel;
 	  br_client.send(message);
 	};
