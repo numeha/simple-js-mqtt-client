@@ -52,7 +52,7 @@
 	/* 
 	 * Exposes the current version of the library.
 	 */
-	mqtt.VERSION = '0.3.1';
+	mqtt.VERSION = '0.4.0';
 	
 	
 	/** 
@@ -102,7 +102,7 @@
 					cb(message);
 		});
 		// Register successfull connection callback
-		n_client.on('connect', function(){
+		n_client.on('connect', function() {
 			// Set isConnected flag and output message
 			isConnected = true;
 			// If the user defined a callback, execute it
@@ -119,19 +119,16 @@
 		// Register callbacks
 		br_client.onConnectionLost = function(){
 			isConnected = false;
-			console.warn("Connection to broker lost. It might be because another client with the same ID is already connected to the same broker")
 			// TODO try to reconnect
 		}
 		br_client.onMessageArrived = function (message) {
 			var cb = subscriptions[message.destinationName];
 			if (cb!==undefined)
 				cb(message.payloadString)
-			// console.debug("Message `" + message.payloadString + "` on channel `" + message.destinationName +"`");
 		}
 		// Connect
 		br_client.connect({onSuccess:function(){
 			isConnected = true;
-			// console.debug("Connected to MQTT server")	
 			// If there is a callback defined, execute it
 			if (callback!==undefined) {
 				callback();
@@ -163,18 +160,17 @@
 	}
 	
 	// Helper function that disconnects MQTT client in node
-	var disconnectNode = function(){
+	var disconnectNode = function() {
 		n_client.end();
 		isConnected = false;
 		subscriptions = {};
 	};
 	
 	// Helper function that diconnects MQTT client in the browser
-	var disconnectBrowser = function(){
+	var disconnectBrowser = function() {
 		br_client.disconnect()
 		isConnected = false;
 		subscriptions = {};
-		// console.debug("Disconnected from MQTT server");
 	};
 	
 	
@@ -190,31 +186,39 @@
 	/**
 	 * Subscribes to a channel and registers a callback.
 	 * @param {string} channel  - the channel we are subscribing to.
-	 * @param {callback} - A function that is executed every time a message is received on that channel.
+	 * @param {callback} callback - A function that is executed every time a message is received on that channel.
+	 * @param {callback} [done_callback] - A function that is executed once the subscribe operation has completed successfully.
 	 */
-	mqtt.subscribe = function (channel, callback) {
+	mqtt.subscribe = function (channel, callback, done_callback) {
 		if( has_require ) {
-			subscribeNode(channel, callback);
+			subscribeNode(channel, callback, done_callback);
 		} else {
-			subscribeBrowser(channel, callback);
+			subscribeBrowser(channel, callback, done_callback);
 		}
 	};
 	
 	// Helper function that subscribes to a channel in node
-	var subscribeNode = function(channel, callback){
+	var subscribeNode = function(channel, callback, done_callback){
 		var onSuccess = function(err, granted) {
 			subscriptions[channel] = callback;
+			// If there is a done_callback defined, execute it
+			if (done_callback!==undefined) {
+				done_callback();
+			}
 		}
 		n_client.subscribe(channel, {qos : 0}, onSuccess);
 	};
 	
 	// Helper function that subscribes to a channel in the browser
-	var subscribeBrowser = function(channel, callback){
+	var subscribeBrowser = function(channel, callback, done_callback){
 		var options = {};
 		options.qos = 0;
 		options.onSuccess = function() {
 			subscriptions[channel] = callback;
-			// console.debug("Subscribed to channel " + channel);
+			// If there is a done_callback defined, execute it
+			if (done_callback!==undefined) {
+				done_callback();
+			}
 		}
 		br_client.subscribe(channel, options);
 	};
@@ -223,29 +227,37 @@
 	/**
 	 * Unsubscribe from a channel.
 	 * @param {string} channel  - the channel we are unsibscribing from.
+	 * @param {callback} [done_callback] - A function that is executed once the unsubscribe operation has completed successfully.
 	 */
-	mqtt.unsubscribe = function (channel) {
+	mqtt.unsubscribe = function (channel, done_callback) {
 		if( has_require ) {
-			unsubscribeNode(channel);
+			unsubscribeNode(channel, done_callback);
 		} else {
-			unsubscribeBrowser(channel);
+			unsubscribeBrowser(channel, done_callback);
 		}
 	};
 	
 	// Helper function that unsubscribes from a channel in node
-	var unsubscribeNode = function(channel) {
+	var unsubscribeNode = function(channel, done_callback) {
 		var onSuccess = function() {
 			delete subscriptions[channel];
+			// If there is a done_callback defined, execute it
+			if (done_callback!==undefined) {
+				done_callback();
+			}
 		}
 		n_client.unsubscribe(channel, onSuccess);
 	};
 	
 	// Helper function that subscribes from a channel in the browser
-	var unsubscribeBrowser = function(channel) {
+	var unsubscribeBrowser = function(channel, done_callback) {
 		var options = {};
 		options.onSuccess = function() {
 			delete subscriptions[channel];
-			// console.debug("Unsubscribed from channel " + channel);
+			// If there is a done_callback defined, execute it
+			if (done_callback!==undefined) {
+				done_callback();
+			}
 		}
 		br_client.unsubscribe(channel, options);
 	};
