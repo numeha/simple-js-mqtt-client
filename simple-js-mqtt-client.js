@@ -52,7 +52,7 @@
 	/* 
 	 * Exposes the current version of the library.
 	 */
-	mqtt.VERSION = '0.3.0';
+	mqtt.VERSION = '0.3.1';
 	
 	
 	/** 
@@ -87,6 +87,7 @@
 		} else {
 			connectBrowser(host, clientId, callback);
 		}
+		return clientId;
 	};
 	
 	// Helper function that connects MQTT client in node
@@ -96,7 +97,9 @@
 		// Register incoming message callback
 		n_client.on('message', function(channel, message) {
 			// Executes the appropriate channel callback
-			subscriptions[channel](message);
+			var cb = subscriptions[channel];
+			if (cb!==undefined)
+					cb(message);
 		});
 		// Register successfull connection callback
 		n_client.on('connect', function(){
@@ -120,13 +123,15 @@
 			// TODO try to reconnect
 		}
 		br_client.onMessageArrived = function (message) {
-			subscriptions[message.destinationName](message.payloadString)
-			console.debug("Message `" + message.payloadString + "` on channel `" + message.destinationName +"`");
+			var cb = subscriptions[message.destinationName];
+			if (cb!==undefined)
+				cb(message.payloadString)
+			// console.debug("Message `" + message.payloadString + "` on channel `" + message.destinationName +"`");
 		}
 		// Connect
 		br_client.connect({onSuccess:function(){
 			isConnected = true;
-			console.debug("Connected to MQTT server")	
+			// console.debug("Connected to MQTT server")	
 			// If there is a callback defined, execute it
 			if (callback!==undefined) {
 				callback();
@@ -169,7 +174,7 @@
 		br_client.disconnect()
 		isConnected = false;
 		subscriptions = {};
-		console.debug("Disconnected from MQTT server");
+		// console.debug("Disconnected from MQTT server");
 	};
 	
 	
@@ -209,7 +214,7 @@
 		options.qos = 0;
 		options.onSuccess = function() {
 			subscriptions[channel] = callback;
-			console.debug("Subscribed to channel " + channel);
+			// console.debug("Subscribed to channel " + channel);
 		}
 		br_client.subscribe(channel, options);
 	};
@@ -240,7 +245,7 @@
 		var options = {};
 		options.onSuccess = function() {
 			delete subscriptions[channel];
-			console.debug("Unsubscribed from channel " + channel);
+			// console.debug("Unsubscribed from channel " + channel);
 		}
 		br_client.unsubscribe(channel, options);
 	};
